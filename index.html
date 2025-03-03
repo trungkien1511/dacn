@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biểu Đồ Chất Lượng Không Khí</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f4f8;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 30px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #2c3e50;
+            font-weight: 700;
+            font-size: 2.5em;
+        }
+        h2 {
+            margin: 20px 0 10px;
+            color: #34495e;
+            font-weight: 700;
+            font-size: 1.8em;
+        }
+        img {
+            width: 100%;
+            height: auto;
+            margin: 20px 0;
+            transition: transform 0.3s;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        img:hover {
+            transform: scale(1.05);
+        }
+        .aqi-info {
+            border: 1px solid #4CAF50;
+            padding: 20px;
+            margin: 20px 0;
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .button-container {
+            display: flex;
+            flex-direction: column; /* Thay đổi chiều dọc */
+            align-items: center; /* Căn giữa */
+            margin: 40px 0; /* Khoảng cách cho nút */
+        }
+        .button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 18px;
+            margin: 10px 0; /* Tăng khoảng cách giữa các nút */
+            cursor: pointer;
+            border-radius: 8px;
+            transition: background-color 0.3s, transform 0.3s; /* Hiệu ứng chuyển màu và phóng to */
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .button:hover {
+            background-color: #45a049;
+            transform: scale(1.05); /* Phóng to khi hover */
+        }
+        .alert-box {
+            background-color: #ffcccc;
+            padding: 10px;
+            margin: 10px 0;
+            text-align: center;
+            border: 1px solid #ff0000;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+    </style>
+    <script>
+        function showAlert(message) {
+            if (message) {
+                const alertBox = document.createElement('div');
+                alertBox.className = 'alert-box'; 
+                alertBox.textContent = message;
+                document.body.prepend(alertBox);
+            }
+        }
+    </script>
+</head>
+<body onload="showAlert('{{ message | e }}')">
+    <div class="container">
+        <h1>Biểu Đồ Chất Lượng Không Khí Tại {{ location | e }}</h1>
+        <div class="aqi-info">
+            <h2>Thành Phố: {{ city_name | e | upper }}</h2>
+            <h2>AQI Hiện Tại: {{ aqi }} ({{ aqi_level | e }})</h2>
+            <p>{{ aqi_message | e }}</p>
+            <p><strong>Câu Chuyện Cảnh Báo:</strong> {{ cautionary_statement | e }}</p>
+            <h2>Chất Ô Nhiễm Chính: {{ dominentpol | e | upper }}</h2>
+        </div>
+        
+        <h2>Biểu Đồ IAQI</h2>
+        <img src="{{ url_for('static', filename='images/' + location + '/iaqi_bar.png') }}" alt="IAQI Bar Chart" loading="lazy">
+
+        <h2>Dự Đoán PM2.5</h2>
+        <img src="{{ url_for('static', filename='images/' + location + '/pm25_forecast.png') }}" alt="PM2.5 Forecast" loading="lazy">
+
+        <h2>Dự Đoán PM10</h2>
+        <img src="{{ url_for('static', filename='images/' + location + '/pm10_forecast.png') }}" alt="PM10 Forecast" loading="lazy">
+
+        <h2>Dự Đoán O3</h2>
+        <img src="{{ url_for('static', filename='images/' + location + '/o3_forecast.png') }}" alt="O3 Forecast" loading="lazy">
+
+        <h2>Biểu Đồ Nhóm PM2.5</h2>
+        <img src="{{ url_for('static', filename='images/' + location + '/pm25_grouped.png') }}" alt="PM2.5 Grouped Bar Chart" loading="lazy">
+
+        <h2>Biểu Đồ Nhóm PM10</h2>
+        <img src="{{ url_for('static', filename='images/' + location + '/pm10_grouped.png') }}" alt="PM10 Grouped Bar Chart" loading="lazy">
+
+        <h2>Biểu Đồ Nhóm O3</h2>
+        <img src="{{ url_for('static', filename='images/' + location + '/o3_grouped.png') }}" alt="O3 Grouped Bar Chart" loading="lazy">
+
+        <div class="button-container">
+            <form action="/export_word" method="post">
+                <input type="hidden" name="location" value="{{ location | e }}">
+                <input type="hidden" name="position" value="{{ position | e }}">
+                <input type="hidden" name="aqi" value="{{ aqi }}">
+                <input type="hidden" name="dominentpol" value="{{ dominentpol | e }}">
+                <input type="hidden" name="city_name" value="{{ city_name | e }}">
+                <input type="hidden" name="aqi_level" value="{{ aqi_level | e }}">
+                <input type="hidden" name="aqi_message" value="{{ aqi_message | e }}">
+                <input type="hidden" name="cautionary_statement" value="{{ cautionary_statement | e }}">
+                <button type="submit" class="button">Xuất Ra Word</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

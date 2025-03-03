@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dự đoán Chỉ số Chất lượng Không khí (AQI)</title>
+    <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/809/809957.png" type="image/png">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(to right, #e0f7fa, #e1bee7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            max-width: 900px;
+            padding: 30px;
+            background: #fff;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 2.5em;
+            font-weight: 700;
+        }
+        form {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            margin-right: 20px;
+        }
+        label {
+            margin-top: 15px;
+            font-weight: bold;
+            color: #555;
+            font-size: 1.1em;
+        }
+        input[type="text"] {
+            padding: 12px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        input[type="text"]:focus {
+            border-color: #5cb85c;
+            box-shadow: 0 0 10px rgba(92, 184, 92, 0.6);
+            outline: none;
+        }
+        input[type="submit"] {
+            padding: 12px 20px;
+            margin-top: 25px;
+            border: none;
+            border-radius: 8px;
+            background: #5cb85c;
+            color: white;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: background 0.3s, transform 0.2s;
+        }
+        input[type="submit"]:hover {
+            background: #4cae4c;
+            transform: scale(1.05);
+        }
+        .result {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 1.5em;
+            color: #333;
+        }
+        .explanation {
+            color: #d32f2f;
+            font-size: 0.9em;
+            margin-top: 5px;
+            display: none;
+            transition: opacity 0.3s;
+        }
+        .image-section {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .aqi-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+        }
+    </style>
+    <script>
+        function showExplanation(inputName) {
+            const explanations = {
+                'SO2': 'Chỉ số SO2 là lượng lưu huỳnh điôxít trong không khí, thường được đo bằng µg/m³.',
+                'NO2': 'Chỉ số NO2 là lượng nitơ điôxít trong không khí, được đo bằng µg/m³.',
+                'RSPM': 'Chỉ số RSPM đo bụi mịn nhỏ hơn 10 micromet, tính bằng µg/m³.',
+                'SPM': 'Chỉ số SPM là lượng bụi tổng trong không khí, tính bằng µg/m³.',
+            };
+            const explanation = document.getElementById(inputName + 'Explanation');
+            explanation.innerText = explanations[inputName];
+            explanation.style.display = 'block';
+            explanation.style.opacity = '1';
+        }
+
+        function hideExplanation(inputName) {
+            const explanation = document.getElementById(inputName + 'Explanation');
+            explanation.style.opacity = '0';
+            setTimeout(() => explanation.style.display = 'none', 300);
+        }
+
+        function validateForm() {
+            let valid = true;
+            document.querySelectorAll('input[type="text"]').forEach(input => {
+                if (isNaN(input.value) || input.value.trim() === '') {
+                    valid = false;
+                    input.nextElementSibling.innerText = 'Vui lòng nhập số hợp lệ!';
+                    input.nextElementSibling.style.display = 'block';
+                } else {
+                    input.nextElementSibling.style.display = 'none';
+                }
+            });
+            return valid;
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div class="form-section">
+            <h1>Dự đoán chỉ số <br> Chất lượng Không khí (AQI)</h1>
+            <form method="POST" onsubmit="return validateForm()">
+                <label for="SO2">Chỉ số SO₂:</label>
+                <input type="text" name="SO2" placeholder="Nhập giá trị cho SO₂ (µg/m³)" required 
+                       onfocus="showExplanation('SO2')" onblur="hideExplanation('SO2')" value="{{ request.form.get('SO2', '') }}">
+                <div id="SO2Explanation" class="explanation"></div>
+            
+                <label for="NO2">Chỉ số NO₂:</label>
+                <input type="text" name="NO2" placeholder="Nhập giá trị cho NO₂ (µg/m³)" required 
+                       onfocus="showExplanation('NO2')" onblur="hideExplanation('NO2')" value="{{ request.form.get('NO2', '') }}">
+                <div id="NO2Explanation" class="explanation"></div>
+            
+                <label for="RSPM">Chỉ số RSPM:</label>
+                <input type="text" name="RSPM" placeholder="Nhập giá trị cho RSPM (µg/m³)" required 
+                       onfocus="showExplanation('RSPM')" onblur="hideExplanation('RSPM')" value="{{ request.form.get('RSPM', '') }}">
+                <div id="RSPMExplanation" class="explanation"></div>
+            
+                <label for="SPM">Chỉ số SPM:</label>
+                <input type="text" name="SPM" placeholder="Nhập giá trị cho SPM (µg/m³)" required 
+                       onfocus="showExplanation('SPM')" onblur="hideExplanation('SPM')" value="{{ request.form.get('SPM', '') }}">
+                <div id="SPMExplanation" class="explanation"></div>
+            
+                <input type="submit" value="Dự đoán">
+            </form>        
+            {% if prediction is not none %}
+                <div class="result">Kết quả dự đoán: {{ prediction }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="image-section">
+            <img src="https://file.hstatic.net/1000286959/file/chi_so_chat_luong_khong_khi_va_moi_lien_he_den_suc_khoe_2_bd29d1d08ad8406389e6878fb0c77de8.png" 
+                 alt="Thang đo AQI" class="aqi-image">
+        </div>
+    </div>
+</body>
+</html>

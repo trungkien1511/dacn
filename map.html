@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Air Quality Map</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    /* Bản đồ */
+    #map {
+      height: 1000px;
+      width: 100%;
+    }
+
+    /* Hộp tìm kiếm */
+    #search-box {
+      position: fixed;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1000;
+      background: white;
+      padding: 10px;
+      border-radius: 5px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    #search-input {
+      width: 200px;
+      padding: 5px;
+      margin-right: 10px;
+    }
+
+    /* Nút Hamburger */
+    #hamburger {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      width: 40px;
+      height: 40px;
+      cursor: pointer;
+      z-index: 1000;
+    }
+
+    /* Thiết kế ba gạch ngang */
+    .bar {
+      width: 100%;
+      height: 5px;
+      background-color: #4CAF50;
+      margin: 6px 0;
+      border-radius: 2px;
+      transition: 0.3s;
+    }
+
+    /* Mục lục ẩn bên phải */
+    #toc {
+      position: fixed;
+      top: 0;
+      right: -300px; /* Ban đầu ẩn ra ngoài khung nhìn */
+      height: 100%;
+      width: 300px;
+      background-color: white;
+      box-shadow: -2px 0 15px rgba(0, 0, 0, 0.2);
+      padding: 20px;
+      transition: 0.3s; /* Hiệu ứng chuyển động */
+      z-index: 999;
+    }
+
+    /* Khi mục lục được mở */
+    #toc.show {
+      right: 0;
+    }
+
+    /* Liên kết trong mục lục */
+    #toc a {
+      display: block;
+      padding: 10px 0;
+      font-size: 18px;
+      text-decoration: none;
+      color: #4CAF50;
+    }
+
+    #toc a:hover {
+      text-decoration: underline;
+    }
+
+    /* Hiệu ứng xoay cho nút hamburger khi mở */
+    .rotate .bar:nth-child(1) {
+      transform: rotate(45deg) translate(7px, 7px);
+    }
+
+    .rotate .bar:nth-child(2) {
+      opacity: 0;
+    }
+
+    .rotate .bar:nth-child(3) {
+      transform: rotate(-45deg) translate(7px, -7px);
+    }
+  </style>
+</head>
+<body>
+  <!-- Nút Hamburger -->
+  <div id="hamburger">
+    <div class="bar"></div>
+    <div class="bar"></div>
+    <div class="bar"></div>
+  </div>
+
+  <!-- Mục lục -->
+  <div id="toc">
+    <ul>
+      <li><a href="/predict">Dự đoán AQI</a></li>
+    </ul>
+  </div>
+
+  <!-- Hộp tìm kiếm -->
+  <div id="search-box">
+    <input type="text" id="search-input" placeholder="Enter name of country or city...." />
+    <button id="search-button">Search</button>
+  </div>
+
+  <!-- Bản đồ -->
+  <div id="map"></div>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    // Khởi tạo bản đồ
+    var map = L.map("map").setView([28.3949, 84.124], 8);
+    const mainLayer = L.tileLayer(
+      "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
+      {
+        minZoom: 3,
+        maxZoom: 20,
+        attribution: '&copy; <a href="https://carto.com/">carto.com</a> contributors',
+      }
+    );
+    mainLayer.addTo(map);
+
+    // Thêm lớp overlay AQI
+    var waqiMapOverlay = L.tileLayer(
+      "https://tiles.aqicn.org/tiles/usepa-aqi/{z}/{x}/{y}.png?token=cdcfc9b6df90b585e02ec9d367c88ea755aca36c",
+      {
+        attribution: 'Air Quality Tiles &copy; <a href="https://waqi.info">waqi.info</a>',
+      }
+    ).addTo(map);
+
+    // Xử lý sự kiện nút hamburger
+    const hamburger = document.getElementById("hamburger");
+    const toc = document.getElementById("toc");
+
+    hamburger.addEventListener("click", function () {
+      toc.classList.toggle("show");
+      hamburger.classList.toggle("rotate");
+    });
+
+    // Sự kiện tìm kiếm
+    document.getElementById("search-button").addEventListener("click", function () {
+      var input = document.getElementById("search-input").value;
+      window.location.href = `/air_quality?position=${input}`;
+    });
+  </script>
+</body>
+</html>
